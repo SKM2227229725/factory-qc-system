@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Reject Intake{% endblock %}
+{% block page_title %}Reject Intake{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Reject intake: heat {{ intake.heat_number }}</h1>
+    <p class="page-subtitle">This lot moves to Supplier Quarantine and cannot be issued to production.</p>
+  </div>
+</div>
+
+<div class="card" style="max-width:720px;">
+  <div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle"></i> Once rejected, a Supplier Non-Conformance Report (SNCR) will be raised and Purchasing/Quality will be notified.
+  </div>
+  <form method="post" onsubmit="return confirm('Reject and quarantine this lot?');">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div style="color:var(--danger);font-size:12.5px;margin-top:4px;">{{ field.errors|join:", " }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-danger btn-lg" type="submit"><i class="bi bi-x-octagon"></i> Confirm Rejection</button>
+      <a class="btn btn-outline btn-lg" href="{% url 'materials:detail' intake.pk %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

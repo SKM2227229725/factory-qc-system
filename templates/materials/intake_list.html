@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}Raw Intake{% endblock %}
+{% block page_title %}Raw Material Intake{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Raw Material Intake</h1>
+    <p class="page-subtitle">Log supplier heat lots, verify MTC, and release or quarantine.</p>
+  </div>
+  {% if user.is_authenticated %}
+    <a class="btn btn-primary btn-lg" href="{% url 'materials:create' %}"><i class="bi bi-plus-lg"></i> New Intake</a>
+  {% endif %}
+</div>
+
+<div class="card" style="padding:0;">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Heat No.</th><th>Supplier</th><th>PO</th><th>Grade</th>
+        <th>Qty</th><th>Status</th><th>Received</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for intake in intakes %}
+      <tr>
+        <td><a href="{% url 'materials:detail' intake.pk %}"><strong>{{ intake.heat_number }}</strong></a></td>
+        <td>{{ intake.supplier }}</td>
+        <td>{{ intake.po_number }}</td>
+        <td>{{ intake.material_grade }}</td>
+        <td>{{ intake.quantity }}</td>
+        <td>
+          {% if intake.status == "CLEARED" %}<span class="badge badge-success">{{ intake.get_status_display }}</span>
+          {% elif intake.status == "QUARANTINED" %}<span class="badge badge-danger">{{ intake.get_status_display }}</span>
+          {% elif intake.status == "IN_LAB" %}<span class="badge badge-warning">{{ intake.get_status_display }}</span>
+          {% else %}<span class="badge badge-muted">{{ intake.get_status_display }}</span>{% endif %}
+        </td>
+        <td>{{ intake.received_at|date:"d M Y H:i" }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7">
+        <div class="empty">
+          <i class="bi bi-inbox"></i>
+          No intake records yet. <a href="{% url 'materials:create' %}">Create the first one</a>.
+        </div>
+      </td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

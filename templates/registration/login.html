@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Sign in{% endblock %}
+{% block page_title %}Sign in{% endblock %}
+
+{% block content %}
+<div class="row" style="justify-content:center;margin-top:40px;">
+  <div class="col" style="max-width:420px;">
+    <div class="card">
+      <h1 style="font-size:20px;font-weight:600;margin:0 0 6px 0;">Welcome back</h1>
+      <p style="color:var(--text-muted);margin:0 0 20px 0;font-size:13.5px;">Sign in to access the shopfloor system.</p>
+
+      {% if form.errors %}
+        <div class="alert alert-danger"><i class="bi bi-x-circle"></i> Invalid username or password.</div>
+      {% endif %}
+
+      <form method="post">
+        {% csrf_token %}
+        <div class="form-group">
+          <label class="form-label" for="id_username">Username</label>
+          <input class="form-control" type="text" name="username" id="id_username" required autofocus>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="id_password">Password</label>
+          <input class="form-control" type="password" name="password" id="id_password" required>
+        </div>
+        <button class="btn btn-primary btn-lg" style="width:100%;justify-content:center;" type="submit">
+          <i class="bi bi-box-arrow-in-right"></i> Sign in
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

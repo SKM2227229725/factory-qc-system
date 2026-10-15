@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+{% block title %}Heat {{ intake.heat_number }}{% endblock %}
+{% block page_title %}Heat {{ intake.heat_number }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Heat {{ intake.heat_number }}
+      {% if intake.status == "CLEARED" %}<span class="badge badge-success">{{ intake.get_status_display }}</span>
+      {% elif intake.status == "QUARANTINED" %}<span class="badge badge-danger">{{ intake.get_status_display }}</span>
+      {% elif intake.status == "IN_LAB" %}<span class="badge badge-warning">{{ intake.get_status_display }}</span>
+      {% else %}<span class="badge badge-muted">{{ intake.get_status_display }}</span>{% endif %}
+    </h1>
+    <p class="page-subtitle">{{ intake.material_grade }} &middot; {{ intake.supplier }}</p>
+  </div>
+  <a class="btn btn-outline" href="{% url 'materials:list' %}"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+<div class="row">
+  <div class="col-2">
+    <div class="card">
+      <h3 style="font-size:14px;font-weight:600;margin:0 0 14px 0;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Intake Details</h3>
+      <table class="table">
+        <tbody>
+          <tr><td><strong>Supplier</strong></td><td>{{ intake.supplier }}</td></tr>
+          <tr><td><strong>PO Number</strong></td><td>{{ intake.po_number }}</td></tr>
+          <tr><td><strong>Material Grade</strong></td><td>{{ intake.material_grade }}</td></tr>
+          <tr><td><strong>Quantity</strong></td><td>{{ intake.quantity }}</td></tr>
+          <tr><td><strong>MTC File</strong></td><td><a href="{{ intake.mtc_file.url }}" target="_blank"><i class="bi bi-file-earmark-text"></i> View certificate</a></td></tr>
+          <tr><td><strong>Received By</strong></td><td>{{ intake.received_by }}</td></tr>
+          <tr><td><strong>Received At</strong></td><td>{{ intake.received_at|date:"d M Y H:i" }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="col-2">
+    {% if intake.sncr %}
+    <div class="card" style="border-left:4px solid var(--danger);">
+      <h3 style="font-size:14px;font-weight:600;margin:0 0 10px 0;">Supplier Non-Conformance</h3>
+      <p style="margin:0 0 6px 0;"><strong>{{ intake.sncr }}</strong></p>
+      <p style="margin:0;color:var(--text-muted);font-size:13px;">{{ intake.sncr.reason }}</p>
+      <p style="margin:10px 0 0 0;font-size:12px;color:var(--text-muted);">
+        Raised by {{ intake.sncr.raised_by }} on {{ intake.sncr.created_at|date:"d M Y H:i" }}
+      </p>
+    </div>
+    {% endif %}
+
+    {% if intake.status == "RECEIVED" or intake.status == "IN_LAB" %}
+    <div class="card">
+      <h3 style="font-size:14px;font-weight:600;margin:0 0 14px 0;">Actions</h3>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <form method="post" action="{% url 'materials:clear' intake.pk %}" style="margin:0;" onsubmit="return confirm('Clear this lot for production?');">
+          {% csrf_token %}
+          <button class="btn btn-success btn-lg" type="submit"><i class="bi bi-check2-circle"></i> Clear for Production</button>
+        </form>
+        <a class="btn btn-danger btn-lg" href="{% url 'materials:reject' intake.pk %}"><i class="bi bi-x-octagon"></i> Reject Intake</a>
+      </div>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
