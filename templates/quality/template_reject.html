@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Reject Template{% endblock %}
+{% block page_title %}Reject Template{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Reject {{ pdi }}</h1>
+    <p class="page-subtitle">The template returns to Draft and the Quality Engineer sees your remarks.</p>
+  </div>
+</div>
+
+<div class="card" style="max-width:720px;">
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div style="color:var(--danger);font-size:12.5px;margin-top:4px;">{{ field.errors|join:", " }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-danger btn-lg" type="submit"><i class="bi bi-x-lg"></i> Return to Draft</button>
+      <a class="btn btn-outline btn-lg" href="{% url 'quality:template_detail' pdi.pk %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

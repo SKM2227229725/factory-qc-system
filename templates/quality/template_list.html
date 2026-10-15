@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}PDI Templates{% endblock %}
+{% block page_title %}PDI Checklist Templates{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">PDI Checklist Templates</h1>
+    <p class="page-subtitle">Design inspection checklists, add tolerance fields, and route for approval.</p>
+  </div>
+  {% if can_create %}
+    <a class="btn btn-primary btn-lg" href="{% url 'quality:template_create' %}">
+      <i class="bi bi-plus-lg"></i> New Template
+    </a>
+  {% endif %}
+</div>
+
+<div class="card" style="padding:0;">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Part</th><th>Revision</th><th>Status</th>
+        <th>Fields</th><th>Created By</th><th>Approved By</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for pdi in templates %}
+      <tr>
+        <td><a href="{% url 'quality:template_detail' pdi.pk %}"><strong>{{ pdi.part }}</strong></a></td>
+        <td>Rev {{ pdi.revision }}</td>
+        <td>
+          {% if pdi.status == "APPROVED" %}<span class="badge badge-success">{{ pdi.get_status_display }}</span>
+          {% elif pdi.status == "PENDING" %}<span class="badge badge-warning">{{ pdi.get_status_display }}</span>
+          {% elif pdi.status == "SUPERSEDED" %}<span class="badge badge-muted">{{ pdi.get_status_display }}</span>
+          {% else %}<span class="badge badge-info">{{ pdi.get_status_display }}</span>{% endif %}
+        </td>
+        <td>{{ pdi.field_count }}</td>
+        <td>{{ pdi.created_by }}</td>
+        <td>{{ pdi.approved_by|default:"—" }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6">
+        <div class="empty">
+          <i class="bi bi-clipboard"></i>
+          No templates yet.
+          {% if can_create %}<a href="{% url 'quality:template_create' %}">Create the first one</a>.{% endif %}
+        </div>
+      </td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

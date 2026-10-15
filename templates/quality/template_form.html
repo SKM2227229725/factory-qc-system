@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}New PDI Template{% endblock %}
+{% block page_title %}New PDI Template{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">New PDI Template</h1>
+    <p class="page-subtitle">Pick the part, set a revision letter, and attach the blueprint. You will add inspection fields next.</p>
+  </div>
+</div>
+
+<div class="card" style="max-width:720px;">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+        {{ field }}
+        {% if field.help_text %}<small style="color:var(--text-muted);display:block;margin-top:4px;">{{ field.help_text }}</small>{% endif %}
+        {% if field.errors %}<div style="color:var(--danger);font-size:12.5px;margin-top:4px;">{{ field.errors|join:", " }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-check-lg"></i> Create Draft</button>
+      <a class="btn btn-outline btn-lg" href="{% url 'quality:template_list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

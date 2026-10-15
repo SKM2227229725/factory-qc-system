@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% block title %}{{ pdi }}{% endblock %}
+{% block page_title %}{{ pdi.part }} — Rev {{ pdi.revision }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">
+      {{ pdi.part }} — Rev {{ pdi.revision }}
+      {% if pdi.status == "APPROVED" %}<span class="badge badge-success">{{ pdi.get_status_display }}</span>
+      {% elif pdi.status == "PENDING" %}<span class="badge badge-warning">{{ pdi.get_status_display }}</span>
+      {% elif pdi.status == "SUPERSEDED" %}<span class="badge badge-muted">{{ pdi.get_status_display }}</span>
+      {% else %}<span class="badge badge-info">{{ pdi.get_status_display }}</span>{% endif %}
+    </h1>
+    <p class="page-subtitle">
+      Created by {{ pdi.created_by }}{% if pdi.approved_by %} &middot; approved by {{ pdi.approved_by }} on {{ pdi.approved_at|date:"d M Y H:i" }}{% endif %}
+    </p>
+  </div>
+  <a class="btn btn-outline" href="{% url 'quality:template_list' %}"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+{% if pdi.review_remarks and pdi.status == "DRAFT" %}
+<div class="alert alert-warning">
+  <strong>Returned by Quality Manager:</strong> {{ pdi.review_remarks }}
+</div>
+{% endif %}
+
+{% if pdi.blueprint %}
+<div class="alert alert-info">
+  <i class="bi bi-file-earmark-pdf"></i> <a href="{{ pdi.blueprint.url }}" target="_blank">View blueprint (PDF)</a>
+</div>
+{% endif %}
+
+<div class="card" style="padding:0;">
+  <table class="table">
+    <thead>
+      <tr><th style="width:60px;">#</th><th>Characteristic</th><th>Type</th><th>Specification</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for f in fields %}
+      <tr>
+        <td>{{ f.sequence }}</td>
+        <td>
+          {{ f.name }}
+          {% if f.is_ctq %}<span class="badge badge-ctq">CTQ</span>{% endif %}
+        </td>
+        <td>{{ f.get_field_type_display }}</td>
+        <td><code>{{ f.spec_display }}</code></td>
+        <td style="text-align:right;">
+          {% if can_edit %}
+            <form method="post" action="{% url 'quality:field_remove' pdi.pk f.pk %}" style="display:inline;margin:0;" onsubmit="return confirm('Remove this field?');">
+              {% csrf_token %}
+              <button class="btn btn-outline btn-sm" type="submit"><i class="bi bi-trash"></i></button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5"><div class="empty"><i class="bi bi-list-ul"></i>No fields yet.</div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:16px;">
+  {% if can_edit %}
+    <a class="btn btn-outline btn-lg" href="{% url 'quality:field_add' pdi.pk %}"><i class="bi bi-plus-lg"></i> Add Field</a>
+    <form method="post" action="{% url 'quality:template_submit' pdi.pk %}" style="margin:0;" onsubmit="return confirm('Submit for approval? You will not be able to edit it afterwards.');">
+      {% csrf_token %}
+      <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-send"></i> Submit for Approval</button>
+    </form>
+  {% endif %}
+
+  {% if can_review %}
+    <form method="post" action="{% url 'quality:template_approve' pdi.pk %}" style="margin:0;" onsubmit="return confirm('Approve and release this template to the shopfloor?');">
+      {% csrf_token %}
+      <button class="btn btn-success btn-lg" type="submit"><i class="bi bi-check-lg"></i> Approve</button>
+    </form>
+    <a class="btn btn-danger btn-lg" href="{% url 'quality:template_reject' pdi.pk %}"><i class="bi bi-x-lg"></i> Reject</a>
+  {% endif %}
+</div>
+{% endblock %}

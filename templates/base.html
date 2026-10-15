@@ -31,8 +31,9 @@
       <li><a href="{% url 'materials:list' %}" class="{% if 'materials' in request.resolver_match.namespace %}active{% endif %}">
         <i class="bi bi-box-seam"></i> Raw Intake
       </a></li>
-      
-      
+      <li><a href="{% url 'quality:template_list' %}" class="{% if 'quality' in request.resolver_match.namespace %}active{% endif %}">
+        <i class="bi bi-clipboard-check"></i> PDI Templates
+      </a></li>
     </ul>
     {% endif %}
 
@@ -98,7 +99,6 @@
     document.addEventListener('DOMContentLoaded', function() {
       const icon = document.getElementById('themeIcon');
       if (icon) icon.className = saved === 'dark' ? 'bi bi-sun' : 'bi bi-moon-stars';
-      // Mobile menu button
       if (window.innerWidth <= 900) {
         const mb = document.getElementById('menuBtn');
         if (mb) mb.style.display = 'inline-flex';
