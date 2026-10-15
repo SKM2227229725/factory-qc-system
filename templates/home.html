@@ -41,14 +41,15 @@
       <h3 style="font-size:15px;font-weight:600;margin:0 0 16px 0;">Quick Actions</h3>
       <div style="display:flex;flex-direction:column;gap:10px;">
         <a href="{% url 'materials:create' %}" class="btn btn-primary"><i class="bi bi-plus-lg"></i> New Material Intake</a>
-       
       </div>
     </div>
   </div>
   <div class="col-2">
     <div class="card">
       <h3 style="font-size:15px;font-weight:600;margin:0 0 16px 0;">Intake Status</h3>
-      <canvas id="intakeChart" height="140"></canvas>
+      <div style="position:relative;height:200px;max-width:280px;margin:0 auto;">
+        <canvas id="intakeChart"></canvas>
+      </div>
     </div>
   </div>
 </div>
@@ -108,7 +109,14 @@
         }]
       },
       options: {
-        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 11 } } } },
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 10, font: { size: 11 } }
+          }
+        },
         cutout: '65%'
       }
     });
