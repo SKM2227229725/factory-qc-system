@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block title %}{{ order.number }}{% endblock %}
+{% block page_title %}{{ order.number }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">
+      {{ order.number }}
+      {% if order.status == "DISPATCHED" %}<span class="badge badge-success">{{ order.get_status_display }}</span>
+      {% elif order.status == "QUARANTINED" %}<span class="badge badge-danger">{{ order.get_status_display }}</span>
+      {% elif order.status == "COMPLETED" %}<span class="badge badge-info">{{ order.get_status_display }}</span>
+      {% elif order.status == "IN_PROGRESS" %}<span class="badge badge-warning">{{ order.get_status_display }}</span>
+      {% else %}<span class="badge badge-muted">{{ order.get_status_display }}</span>{% endif %}
+    </h1>
+    <p class="page-subtitle">{{ order.part }} &middot; {{ order.quantity }} pcs</p>
+  </div>
+  <a class="btn btn-outline" href="{% url 'production:list' %}"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+<div class="row">
+  <div class="col-2">
+    <div class="card">
+      <h3 style="font-size:14px;font-weight:600;margin:0 0 14px 0;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.5px;">Order Details</h3>
+      <table class="table">
+        <tbody>
+          <tr><td><strong>Part</strong></td><td>{{ order.part }}</td></tr>
+          <tr><td><strong>Heat lot</strong></td><td><a href="{% url 'materials:detail' order.intake.pk %}">{{ order.intake.heat_number }}</a></td></tr>
+          <tr><td><strong>PDI template</strong></td><td><a href="{% url 'quality:template_detail' order.pdi_template.pk %}">{{ order.pdi_template }}</a></td></tr>
+          <tr><td><strong>Quantity</strong></td><td>{{ order.quantity }}</td></tr>
+          <tr><td><strong>Released by</strong></td><td>{{ order.created_by }}</td></tr>
+          <tr><td><strong>Released at</strong></td><td>{{ order.created_at|date:"d M Y H:i" }}</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="card" style="padding:0;">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Op</th><th>Operation</th><th>Status</th><th>Hold</th>
+        <th>Operator / Station</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for op in operations %}
+      <tr>
+        <td><strong>{{ op.op_number }}</strong></td>
+        <td>{{ op.name }}</td>
+        <td>
+          {% if op.status == "COMPLETED" %}<span class="badge badge-success">{{ op.get_status_display }}</span>
+          {% elif op.status == "IN_PROGRESS" %}<span class="badge badge-warning">{{ op.get_status_display }}</span>
+          {% else %}<span class="badge badge-muted">{{ op.get_status_display }}</span>{% endif %}
+        </td>
+        <td>
+          {% if op.hold_until %}
+            {% if op.is_hold_active %}<span style="color:var(--warning);">⏱ Active</span>
+            {% else %}<span style="color:var(--text-muted);">Expired</span>{% endif %}
+          {% elif op.hold_minutes %}—{% else %}—{% endif %}
+        </td>
+        <td>
+          {% if op.operator %}{{ op.operator }}{% if op.workstation %} @ {{ op.workstation.code }}{% endif %}
+          {% else %}—{% endif %}
+        </td>
+        <td>
+          {% if can_operate and op.status == "PENDING" %}
+            <form method="post" action="{% url 'production:operation_start' order.pk op.pk %}" style="display:flex;gap:6px;margin:0;">
+              {% csrf_token %}
+              <input class="form-control" style="width:130px;padding:5px 8px;font-size:13px;" type="text" name="workstation_code" placeholder="WS-04" required>
+              <button class="btn btn-primary btn-sm" type="submit">Start</button>
+            </form>
+          {% elif can_operate and op.status == "IN_PROGRESS" and op.operator == user %}
+            <form method="post" action="{% url 'production:operation_complete' order.pk op.pk %}" style="margin:0;" onsubmit="return confirm('Complete this operation?');">
+              {% csrf_token %}
+              <button class="btn btn-success btn-sm" type="submit"><i class="bi bi-check-lg"></i> Complete</button>
+            </form>
+          {% else %}
+            <span style="color:var(--text-muted);font-size:12.5px;">—</span>
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6">
+        <div class="empty"><i class="bi bi-list-ul"></i>No operations on this work order.</div>
+      </td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

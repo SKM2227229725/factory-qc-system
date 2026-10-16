@@ -34,6 +34,9 @@
       <li><a href="{% url 'quality:template_list' %}" class="{% if 'quality' in request.resolver_match.namespace %}active{% endif %}">
         <i class="bi bi-clipboard-check"></i> PDI Templates
       </a></li>
+      <li><a href="{% url 'production:list' %}" class="{% if 'production' in request.resolver_match.namespace %}active{% endif %}">
+        <i class="bi bi-diagram-3"></i> Work Orders
+      </a></li>
     </ul>
     {% endif %}
 

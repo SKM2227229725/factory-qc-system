@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.urls import include, path
 from django.shortcuts import render
-
+from django.conf import settings
+from django.conf.urls.static import static
 
 def home_view(request):
     from materials.models import RawMaterialIntake
@@ -23,4 +24,7 @@ urlpatterns = [
     path("", home_view, name="home"),
     path("intake/", include("materials.urls")),
     path("pdi/", include("quality.urls")),
+    path("work-orders/", include("production.urls")),
 ]
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
