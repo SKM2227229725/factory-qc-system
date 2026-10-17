@@ -111,36 +111,50 @@
   </form>
 </div>
 {% endif %}
+
+<!-- ========================================== -->
+<!-- SUPERVISOR & MRB ACTIONS                   -->
+<!-- ========================================== -->
+
 {% if inspection.review %}
-<div class="card mb-3" style="border-left:4px solid var(--accent);">
+<div class="card mb-3" style="border-left:4px solid var(--accent); margin-top: 20px;">
   <h3 style="font-size:14px;font-weight:600;margin:0 0 10px 0;">Supervisor Decision: {{ inspection.review.get_decision_display }}</h3>
   <p style="margin-bottom:6px;font-size:13px;color:var(--text-muted);">By {{ inspection.review.reviewer }} on {{ inspection.review.decided_at|date:"d M Y H:i" }}</p>
   {% if inspection.review.remarks %}<p style="margin-bottom:6px;font-size:13px;">Remarks: {{ inspection.review.remarks }}</p>{% endif %}
+  
   {% if inspection.concession %}
     <p style="margin-bottom:6px;font-size:13px;"><span class="badge badge-info">CONCESSION</span> {{ inspection.concession.get_reason_code_display }}: {{ inspection.concession.justification }}</p>
   {% endif %}
+  
   {% if inspection.disposition %}
     <p style="margin:0;font-size:13px;"><strong>MRB Disposition:</strong> {{ inspection.disposition.get_decision_display }} ({{ inspection.disposition.decided_by }}) - {{ inspection.disposition.notes }}</p>
   {% endif %}
 </div>
 {% endif %}
 
-{% if can_review %}
-<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px;">
+<!-- DEBUG: Status is {{ inspection.status }}, Can Review is {{ can_review }} -->
+
+{% if inspection.status == "PENDING_REVIEW" %}
+<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px; margin-bottom: 20px;">
   {% if not has_failures %}
-  <form method="post" action="{% url 'inspections:approve' inspection.pk %}" style="margin:0;" onsubmit="return confirm('Approve this inspection and clear the lot?');">
-    {% csrf_token %}<button class="btn btn-success btn-lg" type="submit">Approve</button>
-  </form>
+    <form method="post" action="{% url 'inspections:approve' inspection.pk %}" style="margin:0;" onsubmit="return confirm('Approve this inspection and clear the lot?');">
+      {% csrf_token %}
+      <button class="btn btn-success btn-lg" type="submit">Approve</button>
+    </form>
   {% elif not inspection.ctq_frozen %}
-  <a class="btn btn-warning btn-lg" href="{% url 'inspections:concede' inspection.pk %}">Issue Concession</a>
+    <a class="btn btn-warning btn-lg" href="{% url 'inspections:concede' inspection.pk %}">Issue Concession</a>
   {% endif %}
+  
   <a class="btn btn-danger btn-lg" href="{% url 'inspections:reject' inspection.pk %}">Reject / Quarantine</a>
 </div>
 {% endif %}
 
-{% if can_dispose %}
-<div style="margin-top:20px;">
-  <a class="btn btn-warning btn-lg" href="{% url 'inspections:disposition' inspection.pk %}">Record MRB Disposition</a>
-</div>
+{% if inspection.status == "REJECTED" %}
+  {% if not inspection.disposition %}
+  <div style="margin-top:20px; margin-bottom: 20px;">
+    <a class="btn btn-warning btn-lg" href="{% url 'inspections:disposition' inspection.pk %}">Record MRB Disposition</a>
+  </div>
+  {% endif %}
 {% endif %}
+
 {% endblock %}
