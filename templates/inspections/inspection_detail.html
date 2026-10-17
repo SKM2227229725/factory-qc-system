@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Inspection #{{ inspection.pk }}{% endblock %}
+{% block page_title %}Inspection #{{ inspection.pk }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">
+      Inspection #{{ inspection.pk }}
+      {% if inspection.status == "APPROVED" %}<span class="badge badge-success">{{ inspection.get_status_display }}</span>
+      {% elif inspection.status == "CONCEDED" %}<span class="badge badge-info">{{ inspection.get_status_display }}</span>
+      {% elif inspection.status == "REJECTED" %}<span class="badge badge-danger">{{ inspection.get_status_display }}</span>
+      {% elif inspection.status == "PENDING_REVIEW" %}<span class="badge badge-warning">{{ inspection.get_status_display }}</span>
+      {% else %}<span class="badge badge-primary">{{ inspection.get_status_display }}</span>{% endif %}
+      {% if inspection.ctq_frozen %}<span class="badge badge-ctq">CTQ FROZEN</span>{% endif %}
+    </h1>
+    <p class="page-subtitle">
+      {{ inspection.work_order }} &middot; Station {{ inspection.workstation.code }}
+      &middot; {{ inspection.template }} &middot; Inspector {{ inspection.inspector }}
+    </p>
+  </div>
+  <a class="btn btn-outline" href="{% url 'inspections:list' %}"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+{% if inspection.ctq_frozen %}
+<div class="alert alert-danger" style="border-left:4px solid var(--danger);">
+  <i class="bi bi-exclamation-triangle"></i>
+  <strong>CTQ FAILURE: Checklist frozen.</strong>
+  Concession is not allowed. Add at least {{ min_photos }} defect photos to each failed reading, then submit for review.
+</div>
+{% endif %}
+
+<div class="card" style="padding:0;margin-bottom:20px;">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th><th>Characteristic</th><th>Specification</th><th>Measured</th>
+        <th>Gauge</th><th>Result</th><th>Defect Photos</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for r in readings %}
+      <tr style="background:{% if r.passed %}rgba(16,185,129,0.05){% else %}rgba(239,68,68,0.05){% endif %};">
+        <td>{{ r.template_field.sequence }}</td>
+        <td>
+          {{ r.template_field.name }}
+          {% if r.template_field.is_ctq %}<span class="badge badge-ctq">CTQ</span>{% endif %}
+        </td>
+        <td><code>{{ r.template_field.spec_display }}</code></td>
+        <td><strong>{{ r.measured_value|default_if_none:"-" }}</strong></td>
+        <td>{{ r.gauge.serial|default:"-" }}</td>
+        <td>
+          {% if r.passed %}<span class="badge badge-success">PASS</span>
+          {% else %}<span class="badge badge-danger">FAIL</span>{% endif %}
+        </td>
+        <td>
+          {% for p in r.photos.all %}
+            <a href="{{ p.image.url }}" target="_blank">Photo {{ forloop.counter }}</a>{% if not forloop.last %}, {% endif %}
+          {% endfor %}
+          {% if not r.passed and is_open_owner and r.photos.all|length < min_photos %}
+            <form method="post" enctype="multipart/form-data" style="margin-top:8px;" action="{% url 'inspections:photo_add' inspection.pk r.pk %}">
+              {% csrf_token %}
+              <input class="form-control" style="margin-bottom:4px;" type="file" name="image" accept="image/*" capture="environment" required>
+              <button class="btn btn-outline btn-sm" type="submit">
+                <i class="bi bi-camera"></i> Upload ({{ r.photos.all|length }}/{{ min_photos }})
+              </button>
+            </form>
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7">
+        <div class="empty"><i class="bi bi-list-ul"></i>No readings yet. Start measuring.</div>
+      </td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if next_field %}
+<div class="card" style="border-left:4px solid {% if next_field.is_ctq %}var(--warning){% else %}var(--accent){% endif %};">
+  <h3 style="font-size:15px;font-weight:600;margin:0 0 12px 0;">
+    Next: {{ next_field.sequence }}. {{ next_field.name }}
+    {% if next_field.is_ctq %}<span class="badge badge-ctq">CTQ</span>{% endif %}
+  </h3>
+  <p style="color:var(--text-muted);margin-bottom:16px;">
+    Specification: <code style="color:var(--text);">{{ next_field.spec_display }}</code>
+  </p>
+  <form method="post" action="{% url 'inspections:reading_add' inspection.pk next_field.pk %}">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+        {{ field }}
+      </div>
+    {% endfor %}
+    <button class="btn btn-primary btn-lg" type="submit">
+      <i class="bi bi-check-lg"></i> Record Reading
+    </button>
+  </form>
+</div>
+{% endif %}
+
+{% if can_submit %}
+<div style="margin-top:20px;">
+  <form method="post" action="{% url 'inspections:submit' inspection.pk %}" onsubmit="return confirm('Submit for supervisor approval? Readings cannot be changed afterwards.');">
+    {% csrf_token %}
+    <button class="btn btn-success btn-lg" type="submit">
+      <i class="bi bi-send"></i> Submit for Approval
+    </button>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}Start Inspection{% endblock %}
+{% block page_title %}Start Inspection{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Start Inspection</h1>
+    <p class="page-subtitle">Enter the station code and job traveler code exactly as printed. No browse-all — you must be physically at the station.</p>
+  </div>
+  <a class="btn btn-outline" href="{% url 'inspections:list' %}"><i class="bi bi-arrow-left"></i> Back</a>
+</div>
+
+<div class="card" style="max-width:640px;">
+  <div class="alert alert-info">
+    <i class="bi bi-info-circle"></i> This is the physical presence rule (BRD §5.1). You must be at the workstation to inspect.
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label class="form-label" for="{{ field.id_for_label }}">{{ field.label }} *</label>
+        {{ field }}
+        {% if field.errors %}<div style="color:var(--danger);font-size:12.5px;margin-top:4px;">{{ field.errors|join:", " }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-primary btn-lg" type="submit">
+        <i class="bi bi-play-fill"></i> Start Inspection
+      </button>
+      <a class="btn btn-outline btn-lg" href="{% url 'inspections:list' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

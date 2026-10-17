@@ -160,3 +160,107 @@ class TemplateField(models.Model):
         if not self._template_is_draft():
             raise ValidationError("Fields cannot be removed from a released template.")
         super().delete(*args, **kwargs)
+        
+        
+
+# ---------------------------------------------------------------------------
+# Inspection models (Phase 3C)
+# ---------------------------------------------------------------------------
+
+class Inspection(models.Model):
+    class Status(models.TextChoices):
+        IN_PROGRESS = "IN_PROGRESS", "In Progress"
+        PENDING_REVIEW = "PENDING_REVIEW", "Awaiting Approval"
+        APPROVED = "APPROVED", "Approved"
+        CONCEDED = "CONCEDED", "Approved with Concession"
+        REJECTED = "REJECTED", "Rejected / Quarantined"
+
+    work_order = models.ForeignKey(
+        "production.WorkOrder", on_delete=models.PROTECT, related_name="inspections"
+    )
+    template = models.ForeignKey(
+        PDITemplate, on_delete=models.PROTECT, related_name="inspections"
+    )
+    workstation = models.ForeignKey(
+        "plant.Workstation", on_delete=models.PROTECT, related_name="inspections"
+    )
+    inspector = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="inspections"
+    )
+    status = models.CharField(
+        max_length=15, choices=Status.choices, default=Status.IN_PROGRESS
+    )
+    ctq_frozen = models.BooleanField(default=False)
+    started_at = models.DateTimeField(auto_now_add=True)
+    submitted_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ["-started_at"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["inspector"],
+                condition=Q(status="IN_PROGRESS"),
+                name="one_open_inspection_per_inspector",
+            )
+        ]
+
+    def __str__(self):
+        return f"Inspection #{self.pk} ({self.work_order})"
+
+    def next_field(self):
+        done = self.readings.values_list("template_field_id", flat=True)
+        return self.template.fields.exclude(pk__in=done).first()
+
+
+class InspectionReading(models.Model):
+    inspection = models.ForeignKey(
+        Inspection, on_delete=models.PROTECT, related_name="readings"
+    )
+    template_field = models.ForeignKey(
+        TemplateField, on_delete=models.PROTECT, related_name="+"
+    )
+    measured_value = models.DecimalField(
+        max_digits=10, decimal_places=4, null=True, blank=True
+    )
+    passed = models.BooleanField()
+    gauge = models.ForeignKey(
+        "plant.Gauge", null=True, blank=True, on_delete=models.PROTECT, related_name="+"
+    )
+    recorded_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["template_field__sequence"]
+        constraints = [
+            models.UniqueConstraint(
+                fields=["inspection", "template_field"], name="one_reading_per_field"
+            )
+        ]
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise PermissionError("Submitted readings cannot be modified.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise PermissionError("Readings cannot be deleted.")
+
+    def __str__(self):
+        return f"{self.template_field.name}: {'PASS' if self.passed else 'FAIL'}"
+
+
+class DefectPhoto(models.Model):
+    reading = models.ForeignKey(
+        InspectionReading, on_delete=models.PROTECT, related_name="photos"
+    )
+    image = models.ImageField(
+        upload_to="defects/%Y/%m/", validators=[validate_file_size]
+    )
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise PermissionError("Defect photos cannot be modified.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise PermissionError("Defect photos cannot be deleted.")

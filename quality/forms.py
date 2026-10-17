@@ -35,3 +35,41 @@ class RemarksForm(forms.Form):
         widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Explain what needs to change"}),
         label="Remarks",
     )
+    
+    
+
+# ---------------------------------------------------------------------------
+# Inspection forms (Phase 3C)
+# ---------------------------------------------------------------------------
+
+from materials.models import validate_file_size  # noqa: E402
+from .models import InspectionReading, TemplateField  # noqa: E402
+
+
+class StartInspectionForm(forms.Form):
+    station_code = forms.CharField(
+        max_length=30, label="Station code (machine QR plate)"
+    )
+    job_code = forms.CharField(max_length=30, label="Job traveler code")
+
+
+class ReadingForm(forms.Form):
+    def __init__(self, template_field, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if template_field.field_type == TemplateField.FieldType.PASS_FAIL:
+            self.fields["result"] = forms.ChoiceField(
+                choices=[("PASS", "Pass"), ("FAIL", "Fail")],
+                widget=forms.RadioSelect,
+            )
+        else:
+            self.fields["value"] = forms.DecimalField(
+                max_digits=10, decimal_places=4, label="Measured value",
+                widget=forms.NumberInput(attrs={"step": "any", "inputmode": "decimal"}),
+            )
+            self.fields["gauge_serial"] = forms.CharField(
+                max_length=30, label="Gauge serial (e.g. VC-104)"
+            )
+
+
+class PhotoForm(forms.Form):
+    image = forms.ImageField(validators=[validate_file_size])

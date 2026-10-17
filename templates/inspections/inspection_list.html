@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Inspections{% endblock %}
+{% block page_title %}Inspections{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Inspections</h1>
+    <p class="page-subtitle">Record measurements on the shopfloor. Each inspector has one open inspection at a time.</p>
+  </div>
+  {% if can_start %}
+    <a class="btn btn-primary btn-lg" href="{% url 'inspections:start' %}">
+      <i class="bi bi-plus-lg"></i> Start Inspection
+    </a>
+  {% endif %}
+</div>
+
+<div class="card" style="padding:0;">
+  <table class="table">
+    <thead>
+      <tr>
+        <th>#</th><th>Work Order</th><th>Station</th><th>Inspector</th>
+        <th>Status</th><th>Started</th>
+      </tr>
+    </thead>
+    <tbody>
+    {% for inspection in inspections %}
+      <tr>
+        <td><a href="{% url 'inspections:detail' inspection.pk %}"><strong>#{{ inspection.pk }}</strong></a></td>
+        <td>{{ inspection.work_order }}</td>
+        <td>{{ inspection.workstation.code }}</td>
+        <td>{{ inspection.inspector }}</td>
+        <td>
+          {% if inspection.status == "APPROVED" %}<span class="badge badge-success">{{ inspection.get_status_display }}</span>
+          {% elif inspection.status == "CONCEDED" %}<span class="badge badge-info">{{ inspection.get_status_display }}</span>
+          {% elif inspection.status == "REJECTED" %}<span class="badge badge-danger">{{ inspection.get_status_display }}</span>
+          {% elif inspection.status == "PENDING_REVIEW" %}<span class="badge badge-warning">{{ inspection.get_status_display }}</span>
+          {% else %}<span class="badge badge-primary">{{ inspection.get_status_display }}</span>{% endif %}
+          {% if inspection.ctq_frozen %}<span class="badge badge-ctq">CTQ</span>{% endif %}
+        </td>
+        <td>{{ inspection.started_at|date:"d M Y H:i" }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6">
+        <div class="empty">
+          <i class="bi bi-clipboard-check"></i>
+          No inspections yet.
+        </div>
+      </td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}
