@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Reject Lot{% endblock %}
+{% block page_title %}Reject Lot{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Reject Lot: Inspection #{{ inspection.pk }}</h1>
+    <p class="page-subtitle">The work order will be quarantined until the Material Review Board decides.</p>
+  </div>
+</div>
+<div class="card" style="max-width:640px;">
+  <div class="alert alert-danger">
+    <i class="bi bi-exclamation-triangle"></i> This will move the job lot to the Rejection Holding Area.
+  </div>
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div style="color:var(--danger);font-size:12.5px;">{{ field.errors|join:", " }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-danger btn-lg" type="submit"><i class="bi bi-x-octagon"></i> Reject and Quarantine</button>
+      <a class="btn btn-outline btn-lg" href="{% url 'inspections:detail' inspection.pk %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

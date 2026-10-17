@@ -264,3 +264,101 @@ class DefectPhoto(models.Model):
 
     def delete(self, *args, **kwargs):
         raise PermissionError("Defect photos cannot be deleted.")
+    
+
+# ---------------------------------------------------------------------------
+# Supervisor review and MRB models (Phase 4A)
+# ---------------------------------------------------------------------------
+
+class SupervisorReview(models.Model):
+    class Decision(models.TextChoices):
+        APPROVED = "APPROVED", "Approved"
+        CONCEDED = "CONCEDED", "Approved with Concession"
+        REJECTED = "REJECTED", "Rejected"
+
+    inspection = models.OneToOneField(
+        Inspection, on_delete=models.PROTECT, related_name="review"
+    )
+    reviewer = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+"
+    )
+    decision = models.CharField(max_length=10, choices=Decision.choices)
+    remarks = models.TextField(blank=True)
+    decided_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise PermissionError("Review decisions cannot be modified.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise PermissionError("Review decisions cannot be deleted.")
+
+    def __str__(self):
+        return f"Review #{self.pk} - {self.get_decision_display()}"
+
+
+class Concession(models.Model):
+    class ReasonCode(models.TextChoices):
+        COSMETIC = "COSMETIC", "Cosmetic / appearance only"
+        FUNCTIONAL_OK = "FUNCTIONAL_OK", "Functionally acceptable to customer"
+        MARGINAL_DIMENSION = "MARGINAL", "Non-critical dimension marginally out"
+        OTHER = "OTHER", "Other (explain in justification)"
+
+    inspection = models.OneToOneField(
+        Inspection, on_delete=models.PROTECT, related_name="concession"
+    )
+    reason_code = models.CharField(max_length=20, choices=ReasonCode.choices)
+    justification = models.TextField()
+    issued_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+"
+    )
+    issued_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise PermissionError("Concessions cannot be modified.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise PermissionError("Concessions cannot be deleted.")
+
+    def __str__(self):
+        return f"Concession on #{self.inspection_id}"
+
+
+class MRBDisposition(models.Model):
+    class Decision(models.TextChoices):
+        REWORK = "REWORK", "Rework"
+        SCRAP = "SCRAP", "Scrap"
+        RTV = "RTV", "Return to Vendor"
+        CUSTOMER_CONCESSION = "CUSTOMER_CONCESSION", "Customer Special Concession"
+
+    inspection = models.OneToOneField(
+        Inspection, on_delete=models.PROTECT, related_name="disposition"
+    )
+    decision = models.CharField(max_length=20, choices=Decision.choices)
+    notes = models.TextField()
+    customer_approval = models.FileField(
+        upload_to="customer_approvals/%Y/%m/",
+        blank=True,
+        validators=[
+            FileExtensionValidator(["pdf", "jpg", "jpeg", "png"]),
+            validate_file_size,
+        ],
+    )
+    decided_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.PROTECT, related_name="+"
+    )
+    decided_at = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self._state.adding:
+            raise PermissionError("MRB dispositions cannot be modified.")
+        super().save(*args, **kwargs)
+
+    def delete(self, *args, **kwargs):
+        raise PermissionError("MRB dispositions cannot be deleted.")
+
+    def __str__(self):
+        return f"MRB Disposition #{self.pk} - {self.get_decision_display()}"

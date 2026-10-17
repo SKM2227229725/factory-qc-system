@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}Approval Queue{% endblock %}
+{% block page_title %}Approval Queue{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Awaiting Approval</h1>
+    <p class="page-subtitle">Inspections submitted by QA floor inspectors.</p>
+  </div>
+</div>
+<div class="card" style="padding:0;">
+  <table class="table">
+    <thead>
+      <tr><th>#</th><th>Work order</th><th>Station</th><th>Inspector</th><th>Submitted</th><th>Flags</th></tr>
+    </thead>
+    <tbody>
+    {% for inspection in inspections %}
+      <tr>
+        <td><a href="{% url 'inspections:detail' inspection.pk %}"><strong>#{{ inspection.pk }}</strong></a></td>
+        <td>{{ inspection.work_order }}</td>
+        <td>{{ inspection.workstation.code }}</td>
+        <td>{{ inspection.inspector }}</td>
+        <td>{{ inspection.submitted_at|date:"d M Y H:i" }}</td>
+        <td>
+          {% if inspection.ctq_frozen %}<span class="badge badge-ctq">CTQ FAILURE</span>{% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="6"><div class="empty"><i class="bi bi-check-circle"></i>Nothing is waiting for approval.</div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

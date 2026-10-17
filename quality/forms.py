@@ -1,8 +1,8 @@
 from django import forms
+from django.core.validators import FileExtensionValidator
 
-from .models import PDITemplate, TemplateField
-
-
+from materials.models import validate_file_size
+from .models import PDITemplate, TemplateField, Concession, MRBDisposition
 class PDITemplateForm(forms.ModelForm):
     class Meta:
         model = PDITemplate
@@ -73,3 +73,29 @@ class ReadingForm(forms.Form):
 
 class PhotoForm(forms.Form):
     image = forms.ImageField(validators=[validate_file_size])
+    
+
+
+# ---------------------------------------------------------------------------
+# Review and MRB forms (Phase 4A)
+# ---------------------------------------------------------------------------
+
+class ConcessionForm(forms.Form):
+    reason_code = forms.ChoiceField(choices=Concession.ReasonCode.choices)
+    justification = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 4, "placeholder": "Explain why this out-of-tolerance dimension is acceptable."}),
+        label="Engineering justification",
+    )
+
+
+class DispositionForm(forms.Form):
+    decision = forms.ChoiceField(choices=MRBDisposition.Decision.choices)
+    notes = forms.CharField(
+        widget=forms.Textarea(attrs={"rows": 3, "placeholder": "Disposition notes"}),
+        label="Notes"
+    )
+    customer_approval = forms.FileField(
+        required=False,
+        label="Customer written approval (only for Customer Special Concession)",
+        validators=[FileExtensionValidator(["pdf", "jpg", "jpeg", "png"]), validate_file_size],
+    )

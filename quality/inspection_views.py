@@ -11,7 +11,10 @@ from accounts.roles import user_has_role
 
 from . import inspection_services as services
 from .forms import PhotoForm, ReadingForm, StartInspectionForm
-from .models import Inspection, InspectionReading, TemplateField
+# MRBDisposition import kiya gaya hai
+from .models import Inspection, InspectionReading, TemplateField, MRBDisposition
+# Review roles import kiye gaye hain
+from .review_views import REVIEW_ROLES, MRB_ROLES
 
 INSPECTOR_ROLES = (roles.QA_FLOOR_INSPECTOR,)
 
@@ -68,6 +71,7 @@ def inspection_detail(request, pk):
     readings = inspection.readings.select_related(
         "template_field", "gauge"
     ).prefetch_related("photos")
+    
     return render(request, "inspections/inspection_detail.html", {
         "inspection": inspection,
         "readings": readings,
@@ -76,6 +80,18 @@ def inspection_detail(request, pk):
         "form": ReadingForm(next_field) if next_field else None,
         "can_submit": is_open_owner and (inspection.ctq_frozen or next_field is None),
         "min_photos": services.MIN_DEFECT_PHOTOS,
+        # --- NAYE CONTEXT VARIABLES SUPERVISOR/MRB KE LIYE ---
+        "can_review": (
+            inspection.status == Inspection.Status.PENDING_REVIEW
+            and user_has_role(request.user, *REVIEW_ROLES)
+            and inspection.inspector_id != request.user.pk
+        ),
+        "can_dispose": (
+            inspection.status == Inspection.Status.REJECTED
+            and user_has_role(request.user, *MRB_ROLES)
+            and not MRBDisposition.objects.filter(inspection=inspection).exists()
+        ),
+        "has_failures": inspection.readings.filter(passed=False).exists(),
     })
 
 

@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Rejection Holding Area{% endblock %}
+{% block page_title %}Rejection Holding Area{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">Digital Rejection Holding Area</h1>
+    <p class="page-subtitle">Quarantined lots waiting for a Material Review Board disposition.</p>
+  </div>
+</div>
+<div class="card" style="padding:0;">
+  <table class="table">
+    <thead>
+      <tr><th>#</th><th>Work order</th><th>Station</th><th>Rejected by</th><th>Remarks</th></tr>
+    </thead>
+    <tbody>
+    {% for inspection in inspections %}
+      <tr>
+        <td><a href="{% url 'inspections:detail' inspection.pk %}"><strong>#{{ inspection.pk }}</strong></a></td>
+        <td>{{ inspection.work_order }}</td>
+        <td>{{ inspection.workstation.code }}</td>
+        <td>{{ inspection.review.reviewer }}</td>
+        <td>{{ inspection.review.remarks }}</td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5"><div class="empty"><i class="bi bi-inbox"></i>No lots are waiting for disposition.</div></td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

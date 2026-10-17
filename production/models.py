@@ -43,6 +43,8 @@ class WorkOrder(models.Model):
         QUARANTINED = "QUARANTINED", "Quarantined"
         COMPLETED = "COMPLETED", "Completed"
         DISPATCHED = "DISPATCHED", "Dispatched"
+        SCRAPPED = "SCRAPPED", "Scrapped"
+        RTV = "RTV", "Returned to Vendor"
 
     number = models.CharField(max_length=30, unique=True)
     part = models.ForeignKey(

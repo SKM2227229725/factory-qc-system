@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block title %}MRB Disposition{% endblock %}
+{% block page_title %}MRB Disposition{% endblock %}
+{% block content %}
+<div class="page-header">
+  <div>
+    <h1 class="page-title">MRB Disposition: Inspection #{{ inspection.pk }}</h1>
+  </div>
+</div>
+<div class="card" style="max-width:640px;">
+  <form method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div style="color:var(--danger);font-size:12.5px;">{{ field.errors|join:", " }}</div>{% endif %}
+      </div>
+    {% endfor %}
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-primary btn-lg" type="submit"><i class="bi bi-check-lg"></i> Record Disposition</button>
+      <a class="btn btn-outline btn-lg" href="{% url 'inspections:detail' inspection.pk %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}
