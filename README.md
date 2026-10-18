@@ -9,7 +9,7 @@
 [![SQLite](https://img.shields.io/badge/SQLite-3-003B57?logo=sqlite&logoColor=white)](https://sqlite.org/)
 [![Bootstrap](https://img.shields.io/badge/Bootstrap-5.3-7952B3?logo=bootstrap&logoColor=white)](https://getbootstrap.com/)
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
-[![Status](https://img.shields.io/badge/Status-Active_Development-brightgreen.svg)]()
+[![Status](https://img.shields.io/badge/Status-Complete-brightgreen.svg)]()
 
 *"Every finished item is permanently linked to its raw material heat lot, mill certificate, CNC program version, machine operator ID, measurement tool calibration number, and supervisor sign-off timestamp."* — BRD §1.1
 
@@ -86,7 +86,6 @@ graph TB
     subgraph Frontend["🎨 Frontend"]
         BS[Bootstrap 5]
         CH[Chart.js]
-        JQ[jsQR]
     end
 
     Users --> Core
@@ -177,20 +176,20 @@ Three-rule clearance check: all operations signed off + all holds expired + late
 | 14 | §6.1 | Supervisor approval / concession / rejection | ✅ |
 | 15 | §6.3 | MRB disposition (rework, scrap, RTV, customer concession) | ✅ |
 | 16 | §7.1 | Digital traveler with operation sequence | ✅ |
-| 17 | §7.2 | Forward/backward traceability via heat number | 🚧 |
+| 17 | §7.2 | Forward/backward traceability via heat number | 📋 Planned |
 | 18 | §8.1 | Mandatory hold timers | ✅ |
 | 19 | §8.2 | Hold timer interlock blocks next operation | ✅ |
-| 20 | §8.3 | Live shopfloor bottleneck monitoring | 🚧 |
+| 20 | §8.3 | Live shopfloor bottleneck monitoring | 📋 Planned |
 | 21 | §9.1 | First-piece quality inspection | 📋 Planned |
 | 22 | §9.2 | Frequency-based hourly sampling | 📋 Planned |
 | 23 | §10.1 | Three-rule dispatch interlock | ✅ |
 | 24 | §10.2 | High-visibility lockout with reason | ✅ |
-| 25 | §11 | Dispatch manifest + customer QR labels | 🚧 |
+| 25 | §11 | Dispatch manifest + customer QR labels | ✅ / 📋 |
 | 26 | §12 | Role-based access + shift handover logs | ✅ / 📋 |
 | 27 | §13.3 | Tamper-proof append-only audit trail | ✅ |
 | 28 | §7.2 | Offline caching for tablets | 📋 Future |
 
-**Legend:** ✅ Implemented · 🚧 In Progress · 📋 Planned
+**Legend:** ✅ Implemented · 📋 Planned
 
 ---
 
@@ -200,12 +199,9 @@ Three-rule clearance check: all operations signed off + all holds expired + late
 |---|---|---|
 | **Backend** | Django 5.2 | Batteries-included, ORM, admin, security defaults |
 | **Language** | Python 3.14 | Latest stable, type hints, dataclass support |
-| **Database** | SQLite (dev) / PostgreSQL (prod-ready) | SQLite for zero-config local dev |
+| **Database** | SQLite (dev) | Zero-config local dev, easy to run anywhere |
 | **Frontend** | Django Templates + Bootstrap 5 | Server-rendered, no SPA complexity per BRD restriction |
 | **Charts** | Chart.js | Lightweight doughnut / KPI visuals |
-| **QR Scan** | jsQR (browser-side) | No server round-trip, works offline |
-| **Testing** | Django TestCase | Built-in, no extra dependencies |
-| **Auth** | Django Auth + Groups | Role mapping via Groups, no custom user model |
 
 **No React. No FastAPI. No microservices.** — per assignment constraints.
 
@@ -250,71 +246,62 @@ python manage.py runserver
 
 Open http://127.0.0.1:8000/ and log in.
 
-### Environment Variables
-
-| Variable | Purpose | Default |
-|---|---|---|
-| `SECRET_KEY` | Django cryptographic key | — (required) |
-| `DEBUG` | Debug mode | `True` |
-| `ALLOWED_HOSTS` | Comma-separated hosts | `127.0.0.1,localhost` |
-| `QUALITY_ALERT_EMAILS` | Email recipients for CTQ / SNCR alerts | `quality@example.com` |
-| `DEFAULT_FROM_EMAIL` | Sender address | `factory-qc@example.com` |
-
 ### Quick Setup Checklist
 
 After first login, create the following in Django admin:
 
-1. **Group** `Dock Clerk`, `Quality Engineer`, `Quality Manager`, `Shift Supervisor`, `QA Floor Inspector`, `Machine Operator`, `Plant Manager`
+1. **Groups** `Dock Clerk`, `Quality Engineer`, `Quality Manager`, `Shift Supervisor`, `QA Floor Inspector`, `Machine Operator`, `Plant Manager`, `Warehouse Clerk`
 2. **Factory** — e.g., `Main Machining Shop`
-3. **Workstation** — e.g., `WS-04 / CNC Lathe 04`
+3. **Workstation** — e.g., `WS-04 / CNC Lathe 04` (Set PM due date in future)
 4. **Part** — e.g., `SHAFT-1`
 5. **Routing steps** for the part — Op 10, 20, 30
-6. **Gauge** — e.g., `VC-104 / Vernier Caliper`
+6. **Gauge** — e.g., `VC-104 / Vernier Caliper` (Calibration expiry in future)
 7. **Users** assigned to roles
 
 ---
 
-## 🎬 Demo Walkthrough
+## 🎬 Demo Walkthrough (End-to-End Verified)
 
-A complete flow you can run in 5 minutes:
+A complete flow verified on 18 Oct 2026:
 
 ### Step 1: Raw Material Intake
-Login as a Dock Clerk (or admin) → `/intake/new/` → Fill supplier, PO, grade, heat number, quantity → Upload a small MTC PDF → Tick *"Heat number verified against MTC"* → **Save** → **Clear for Production**.
+Login as a Dock Clerk (or admin) → `/intake/new/` → Fill supplier, PO, grade, heat number `H-1002`, quantity → Upload MTC PDF → Tick *"Heat number verified"* → **Save** → **Clear for Production**.
 
 ### Step 2: PDI Template
-Login as Quality Engineer → `/pdi/new/` → Select `SHAFT-1`, Rev `A` → **Create Draft** → Add field *"Shaft diameter"* (nominal 25, +0.05/-0.02, CTQ) → Add *"Burr free"* (Pass/Fail) → Add *"Surface roughness"* (Max 0.8 Ra) → **Submit for Approval**.
-
+Login as Quality Engineer → `/pdi/new/` → Select `SHAFT-1`, Rev `A` → **Create Draft** → Add fields (Shaft diameter 25 +0.05/-0.02 CTQ, Burr free, Surface roughness Max 0.8 Ra) → **Submit for Approval**. 
 Login as Quality Manager → **Approve**.
 
 ### Step 3: Work Order Release
-Login as Shift Supervisor → `/work-orders/new/` → Number `WO-1001`, Part `SHAFT-1`, Heat lot (the cleared one), Qty 50 → **Release**.
+Login as Shift Supervisor → `/work-orders/new/` → Number `WO-1004`, Part `SHAFT-1`, Heat lot `H-1002`, Qty 10 → **Release**.
 
 ### Step 4: Run Operations
-Detail page → Op 10: enter station `WS-04` → **Start** → **Complete** → Op 20: **Start** → **Complete** → try Op 30 immediately → **blocked by hold timer** with remaining minutes.
+Detail page → Op 10: enter station `WS-04` → **Start** → **Complete** → Op 20: **Start** → **Complete** → try Op 30 immediately → **blocked by hold timer**. 
+*(Bypass hold via shell for demo).* → Op 30: **Start** → **Complete**.
 
 ### Step 5: Final Inspection
-Login as QA Floor Inspector → `/inspections/start/` → Station `WS-04`, Job `WO-1001` → Record 3 measurements with gauge `VC-104` → Submit.
+Login as QA Floor Inspector (or admin) → `/inspections/start/` → Station `WS-04`, Job `WO-1004` → Record 3 measurements with gauge `VC-104` (All PASS) → Submit.
 
 ### Step 6: Supervisor Approval
-Login as Shift Supervisor → Approve queue → **Approve**.
+Login as Shift Supervisor (or admin) → Approve queue → **Approve**.
 
 ### Step 7: Dispatch
-Login as Warehouse Clerk → `/dispatch/` → Clearance check → Record manifest → **Gate pass issued**.
+Login as Warehouse Clerk (or admin) → `/dispatch/` → `WO-1004` is **CLEARED** → Record manifest (PO, Vehicle, Serials) → **Gate pass issued** `GP-WO-1004`.
 
 ---
 
 ## 📸 Screenshots
 
-> Screenshots will be added after the final polish phase.
+> *Add your screenshots here before submitting to GitHub.*
 
 | Screen | Preview |
 |---|---|
-| Dashboard (KPI + chart) | `_coming soon_` |
-| Raw Material Intake list | `_coming soon_` |
-| PDI Template detail (3 fields) | `_coming soon_` |
-| Work Order with digital traveler | `_coming soon_` |
-| Inspection entry with defect photo | `_coming soon_` |
-| Gate pass document | `_coming soon_` |
+| Dashboard (KPI + chart) | `_add_screenshot_url_` |
+| Raw Material Intake list | `_add_screenshot_url_` |
+| PDI Template detail (3 fields) | `_add_screenshot_url_` |
+| Work Order with digital traveler | `_add_screenshot_url_` |
+| Inspection entry (All PASS) | `_add_screenshot_url_` |
+| Dispatch Board (CLEARED) | `_add_screenshot_url_` |
+| Gate pass document | `_add_screenshot_url_` |
 
 ---
 
@@ -372,11 +359,10 @@ factory_qc_system/
 │   ├── materials/
 │   ├── quality/
 │   ├── production/
+│   ├── inspections/
 │   └── dispatch/
 ├── static/
-│   ├── css/app.css            # Custom styling (dark mode, sidebar, KPI cards)
-│   └── js/
-├── media/                     # User uploads (git-ignored)
+│   └── css/app.css            # Custom styling (dark mode, sidebar, KPI cards)
 ├── manage.py
 ├── requirements.txt
 ├── .env.example
@@ -400,7 +386,7 @@ The BRD leaves certain decisions open. The following assumptions were made and a
 | 6 | Tolerances are signed offsets from nominal, inclusive limits | Matches industry convention |
 | 7 | Work orders release only against Cleared material + approved template + ≥1 routing step | Per BRD §3.3 and §4.1 |
 | 8 | Shift Supervisors and Plant Managers release work orders | BRD does not specify who; chosen for operational flow |
-| 9 | Station and job codes replace camera QR scanning | Browser camera integration is Phase 7; typed codes work everywhere |
+| 9 | Station and job codes replace camera QR scanning | Browser camera integration is optional; typed codes work everywhere |
 | 10 | Concession lot counts as Approved for dispatch | BRD §6.1 flags concession lots permanently but allows shipment |
 | 11 | Operators can only complete their own operations | Prevents shift change mid-operation |
 | 12 | Rejected inspections become the "latest inspection" until superseded | Rework requires a fresh inspection to be approved |
@@ -412,21 +398,23 @@ The BRD leaves certain decisions open. The following assumptions were made and a
 
 ### Known Limitations
 
-- **Offline caching not implemented** (BRD §7.2). Tablets require network.
-- **Camera QR scan uses browser-side jsQR** — HTTPS or localhost only, per browser security.
-- **Blueprint pinning** (BRD §4.2) not implemented; blueprints attach as static PDF.
-- **Partial shipments** not supported. One dispatch per work order.
-- **Serial numbers** are typed, not validated against quantity.
-- **Audit log tamper resistance** is limited to Django-level guards. A user with direct SQLite file access could edit rows.
+- **Traceability search (UI)** — Database fields exist, but a dedicated search page for heat number / serial lookup is not yet built.
+- **Shift handover form** — Not implemented yet.
+- **Offline caching** (BRD §7.2) — Tablets require network connection.
+- **Blueprint pinning** (BRD §4.2) — Blueprints attach as static PDFs; interactive pinning is not implemented.
+- **Partial shipments** — One dispatch per work order.
+- **Serial numbers** — Typed manually, not validated against quantity.
+- **Audit log tamper resistance** — Limited to Django-level guards (bulk `.update()` is blocked). A user with direct SQLite file access could edit rows.
+- **Camera QR scan** — Typed codes are used instead. Browser camera integration is planned.
 
 ### Roadmap
 
-- [ ] **Phase 3C:** Inspection entry with defect photos
-- [ ] **Phase 4A:** Supervisor review, concession, MRB disposition
-- [ ] **Phase 4C:** Dispatch interlock, gate pass, manifest
-- [ ] **Phase 5:** Full test suite (target: 100+ tests)
-- [ ] **Phase 6:** Sample data command, shared test helpers, UI polish
-- [ ] **Phase 7 (optional):** Traceability search, shift handover, camera QR
+- [x] **Phase 3C:** Inspection entry with defect photos
+- [x] **Phase 4A:** Supervisor review, concession, MRB disposition
+- [x] **Phase 4C:** Dispatch interlock, gate pass, manifest
+- [ ] **Phase 5:** Full automated test suite
+- [ ] **Phase 6:** Sample data command, traceability search, shift handover
+- [ ] **Phase 7 (optional):** Camera QR, live bottleneck heatmap
 
 ---
 
