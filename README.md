@@ -291,18 +291,17 @@ Login as Warehouse Clerk (or admin) → `/dispatch/` → `WO-1004` is **CLEARED*
 
 ## 📸 Screenshots
 
-> *Add your screenshots here before submitting to GitHub.*
+> *End-to-end demo of the system.*
 
 | Screen | Preview |
 |---|---|
-| Dashboard (KPI + chart) | `_add_screenshot_url_` |
-| Raw Material Intake list | `_add_screenshot_url_` |
-| PDI Template detail (3 fields) | `_add_screenshot_url_` |
-| Work Order with digital traveler | `_add_screenshot_url_` |
-| Inspection entry (All PASS) | `_add_screenshot_url_` |
-| Dispatch Board (CLEARED) | `_add_screenshot_url_` |
-| Gate pass document | `_add_screenshot_url_` |
-
+| **Dashboard (KPI + chart)** | ![Dashboard](screenshots/dashboard.png) |
+| **Raw Material Intake list** | ![Intake](screenshots/intake_list.png) |
+| **PDI Template detail** | ![PDI](screenshots/pdi_template.png) |
+| **Work Order with traveler** | ![Work Order](screenshots/work_order.png) |
+| **Inspection entry (All PASS)** | ![Inspection](screenshots/inspection.png) |
+| **Dispatch Board (CLEARED)** | ![Dispatch](screenshots/dispatch_board.png) |
+| **Gate pass document** | ![Gate Pass](screenshots/gate_pass.png) |
 ---
 
 ## 📁 Project Structure
