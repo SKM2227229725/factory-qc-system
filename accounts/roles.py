@@ -13,6 +13,7 @@ QA_FLOOR_INSPECTOR = "QA Floor Inspector"
 DOCK_CLERK = "Dock Clerk"
 MACHINE_OPERATOR = "Machine Operator"
 STORE_KEEPER = "Store Keeper"
+WAREHOUSE_CLERK = "Warehouse Clerk"  # <-- Naya role add kiya
 
 
 ALL_ROLES = [
@@ -24,6 +25,7 @@ ALL_ROLES = [
     DOCK_CLERK,
     MACHINE_OPERATOR,
     STORE_KEEPER,
+    WAREHOUSE_CLERK,  # <-- Yahan bhi add kiya
 ]
 
 

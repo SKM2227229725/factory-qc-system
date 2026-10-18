@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Packing Slip{% endblock %}
+{% block page_title %}Packing Slip{% endblock %}
+{% block content %}
+<div class="card" style="max-width:800px;">
+  <h1 class="h3">Packing Slip: {{ order.number }}</h1>
+  <p class="mb-1">Customer PO: <strong>{{ dispatch.customer_po }}</strong> &middot; Gate pass {{ dispatch.gate_pass_number }}</p>
+  <p>Part: {{ order.part }} &middot; Quantity: {{ dispatch.batch_size }}</p>
+  <h2 class="h6 mt-3">Serial numbers</h2>
+  <ul>{% for serial in dispatch.serial_list %}<li>{{ serial }}</li>{% endfor %}</ul>
+  <button class="btn btn-primary" onclick="window.print()">Print</button>
+  <a class="btn btn-outline" href="{% url 'dispatch:gate_pass' order.pk %}">Gate pass</a>
+</div>
+{% endblock %}

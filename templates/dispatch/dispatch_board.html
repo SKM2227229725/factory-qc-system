@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Dispatch clearance{% endblock %}
+{% block page_title %}Dispatch clearance{% endblock %}
+{% block content %}
+<h1 class="page-title mb-3">Dispatch clearance</h1>
+<div class="card" style="padding:0;">
+  <table class="table">
+    <thead>
+      <tr><th>Work order</th><th>Part</th><th>Qty</th><th>Shipping interlock</th></tr>
+    </thead>
+    <tbody>
+    {% for order, reasons in rows %}
+      <tr>
+        <td><a href="{% url 'production:detail' order.pk %}">{{ order.number }}</a></td>
+        <td>{{ order.part }}</td>
+        <td>{{ order.quantity }}</td>
+        <td>
+          {% if reasons %}
+            <span class="badge badge-danger">LOCKED</span>
+            <ul class="small mb-0 mt-1" style="color:var(--danger);">{% for reason in reasons %}<li>{{ reason }}</li>{% endfor %}</ul>
+          {% else %}
+            <span class="badge badge-success">CLEARED</span>
+            <a class="btn btn-primary ms-2 btn-sm" href="{% url 'dispatch:create' order.pk %}">Record manifest</a>
+          {% endif %}
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="4" class="text-center text-muted">No open work orders.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+<h2 class="h5 mt-4">Dispatched</h2>
+<div class="card" style="padding:0;">
+  <table class="table">
+    <thead>
+      <tr><th>Gate pass</th><th>Work order</th><th>Customer PO</th><th>Issued</th><th></th></tr>
+    </thead>
+    <tbody>
+    {% for d in dispatches %}
+      <tr>
+        <td><strong>{{ d.gate_pass_number }}</strong></td><td>{{ d.work_order.number }}</td><td>{{ d.customer_po }}</td>
+        <td>{{ d.issued_at|date:"d M Y H:i" }} by {{ d.issued_by }}</td>
+        <td class="text-end">
+          <a class="btn btn-outline btn-sm" href="{% url 'dispatch:gate_pass' d.work_order.pk %}">Gate pass</a>
+          <a class="btn btn-outline btn-sm" href="{% url 'dispatch:packing_slip' d.work_order.pk %}">Packing slip</a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="5" class="text-center text-muted">Nothing dispatched yet.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

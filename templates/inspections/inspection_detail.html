@@ -113,7 +113,7 @@
 {% endif %}
 
 <!-- ========================================== -->
-<!-- SUPERVISOR & MRB ACTIONS                   -->
+<!-- SUPERVISOR & MRB ACTIONS (Phase 4A)        -->
 <!-- ========================================== -->
 
 {% if inspection.review %}
@@ -132,8 +132,6 @@
 </div>
 {% endif %}
 
-<!-- DEBUG: Status is {{ inspection.status }}, Can Review is {{ can_review }} -->
-
 {% if inspection.status == "PENDING_REVIEW" %}
 <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:20px; margin-bottom: 20px;">
   {% if not has_failures %}
@@ -149,12 +147,10 @@
 </div>
 {% endif %}
 
-{% if inspection.status == "REJECTED" %}
-  {% if not inspection.disposition %}
-  <div style="margin-top:20px; margin-bottom: 20px;">
-    <a class="btn btn-warning btn-lg" href="{% url 'inspections:disposition' inspection.pk %}">Record MRB Disposition</a>
-  </div>
-  {% endif %}
+{% if inspection.status == "REJECTED" and not inspection.disposition %}
+<div style="margin-top:20px; margin-bottom: 20px;">
+  <a class="btn btn-warning btn-lg" href="{% url 'inspections:disposition' inspection.pk %}">Record MRB Disposition</a>
+</div>
 {% endif %}
 
 {% endblock %}

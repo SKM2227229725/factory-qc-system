@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}Shipping Interlock{% endblock %}
+{% block page_title %}Shipping Interlock{% endblock %}
+{% block content %}
+<div class="alert alert-danger border-3 border-danger" style="margin-top:20px;">
+  <h1 class="h3">Shipping Interlock Active: {{ order.number }}</h1>
+  <p class="mb-2">The gate pass, packing slip and dispatch manifest are locked. Unfulfilled requirements:</p>
+  <ul class="fs-5 mb-0" style="color:var(--danger);">
+    {% for reason in reasons %}<li>{{ reason }}</li>{% endfor %}
+  </ul>
+</div>
+<a class="btn btn-outline mt-3" href="{% url 'production:detail' order.pk %}">Open traveler</a>
+<a class="btn btn-outline mt-3" href="{% url 'dispatch:board' %}">Back to dispatch board</a>
+{% endblock %}

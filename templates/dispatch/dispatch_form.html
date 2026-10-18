@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}Dispatch Manifest{% endblock %}
+{% block page_title %}Dispatch Manifest{% endblock %}
+{% block content %}
+<h1 class="page-title mb-3">Dispatch manifest: {{ order.number }}</h1>
+<div class="card" style="max-width:640px;">
+  <p class="text-muted">All three shipping conditions are met. Record the manifest to issue the gate pass.</p>
+  <form method="post">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="form-group">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+      </div>
+    {% endfor %}
+    <div style="display:flex;gap:10px;margin-top:20px;">
+      <button class="btn btn-primary btn-lg" type="submit">Issue Gate Pass</button>
+      <a class="btn btn-outline btn-lg" href="{% url 'dispatch:board' %}">Cancel</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Gate Pass{% endblock %}
+{% block page_title %}Gate Pass{% endblock %}
+{% block content %}
+<div class="card" style="max-width:800px;">
+  <h1 class="h3">Gate Pass {{ dispatch.gate_pass_number }}</h1>
+  <table class="table mt-3">
+    <tr><td><strong>Work order</strong></td><td>{{ order.number }}</td></tr>
+    <tr><td><strong>Part</strong></td><td>{{ order.part }}</td></tr>
+    <tr><td><strong>Batch size</strong></td><td>{{ dispatch.batch_size }}</td></tr>
+    <tr><td><strong>Customer PO</strong></td><td>{{ dispatch.customer_po }}</td></tr>
+    <tr><td><strong>Vehicle</strong></td><td>{{ dispatch.vehicle_details }}</td></tr>
+    <tr><td><strong>Heat lot</strong></td><td>{{ order.intake.heat_number }}</td></tr>
+    <tr><td><strong>Final PDI</strong></td><td>{% if inspection %}Inspection #{{ inspection.pk }}: {{ inspection.get_status_display }}{% endif %}</td></tr>
+    <tr><td><strong>Issued</strong></td><td>{{ dispatch.issued_at|date:"d M Y H:i" }} by {{ dispatch.issued_by }}</td></tr>
+  </table>
+  <button class="btn btn-primary" onclick="window.print()">Print</button>
+  <a class="btn btn-outline" href="{% url 'dispatch:packing_slip' order.pk %}">Packing slip</a>
+</div>
+{% endblock %}
