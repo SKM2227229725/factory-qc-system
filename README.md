@@ -11,6 +11,8 @@
 [![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 [![Status](https://img.shields.io/badge/Status-Complete-brightgreen.svg)]()
 
+### 🎥 [Watch the Live Video Demo Here](https://youtu.be/z3BZsnMA4NY)
+
 *"Every finished item is permanently linked to its raw material heat lot, mill certificate, CNC program version, machine operator ID, measurement tool calibration number, and supervisor sign-off timestamp."* — BRD §1.1
 
 </div>
