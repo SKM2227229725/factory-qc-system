@@ -52,7 +52,7 @@ This system replaces **paper clipboards, loose inspection sheets, hand-written t
 | Delayed supervisor reviews | Live approval queue with role-based access |
 | Bad parts machined further or shipped | Server-side interlocks block downstream operations and dispatch |
 | No traceability for recall | Forward/backward traceability via heat number and serial number |
-| No tool calibration control | Gauge expiry check blocks measurement entry |
+| No tool calibration control | Gauge expiry check blocks measurement  |
 
 ---
 
