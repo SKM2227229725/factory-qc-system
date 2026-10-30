@@ -1,3 +1,4 @@
+
 """
 Django settings for the Factory Operations & Quality Control System.
 
@@ -8,6 +9,7 @@ python-decouple. Never commit the real .env file.
 from pathlib import Path
 
 from decouple import Csv, config
+from django.contrib.messages import constants as message_constants
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -18,11 +20,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = [
-    "factory-qc-system.onrender.com",
-    "localhost",
-    "127.0.0.1",
-]
+ALLOWED_HOSTS = config(
+    "ALLOWED_HOSTS",
+    default="factory-qc-system.onrender.com,localhost,127.0.0.1",
+    cast=Csv(),
+)
+
+
 # ---------------------------------------------------------------------------
 # Applications
 # ---------------------------------------------------------------------------
@@ -33,6 +37,7 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+
     # Project apps
     "accounts",
     "audit",
@@ -43,8 +48,13 @@ INSTALLED_APPS = [
     "dispatch",
 ]
 
+
+# ---------------------------------------------------------------------------
+# Middleware
+# ---------------------------------------------------------------------------
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -52,6 +62,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
+
 
 ROOT_URLCONF = "config.urls"
 
@@ -75,7 +86,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 
 # ---------------------------------------------------------------------------
-# Database — SQLite for local development
+# Database
 # ---------------------------------------------------------------------------
 DATABASES = {
     "default": {
@@ -89,10 +100,18 @@ DATABASES = {
 # Password validation
 # ---------------------------------------------------------------------------
 AUTH_PASSWORD_VALIDATORS = [
-    {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},
-    {"NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"},
-    {"NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"},
-    {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
+    {
+        "NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.MinimumLengthValidator"
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.CommonPasswordValidator"
+    },
+    {
+        "NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"
+    },
 ]
 
 
@@ -108,13 +127,22 @@ USE_TZ = True
 # ---------------------------------------------------------------------------
 # Static and media files
 # ---------------------------------------------------------------------------
-
 STATIC_URL = "/static/"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedStaticFilesStorage",
+    },
+}
+
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
+
 
 # ---------------------------------------------------------------------------
 # Default primary key
@@ -131,20 +159,25 @@ LOGOUT_REDIRECT_URL = "login"
 
 
 # ---------------------------------------------------------------------------
-# Email — console backend for local development
+# Email
 # ---------------------------------------------------------------------------
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
 QUALITY_ALERT_EMAILS = config(
-    "QUALITY_ALERT_EMAILS", default="quality@example.com", cast=Csv()
+    "QUALITY_ALERT_EMAILS",
+    default="quality@example.com",
+    cast=Csv(),
 )
-DEFAULT_FROM_EMAIL = config("DEFAULT_FROM_EMAIL", default="factory-qc@example.com")
+
+DEFAULT_FROM_EMAIL = config(
+    "DEFAULT_FROM_EMAIL",
+    default="factory-qc@example.com",
+)
 
 
 # ---------------------------------------------------------------------------
-# Messages — map Django "error" level to Bootstrap "danger"
+# Messages
 # ---------------------------------------------------------------------------
-from django.contrib.messages import constants as message_constants  # noqa: E402
-
 MESSAGE_TAGS = {
     message_constants.ERROR: "danger",
 }
