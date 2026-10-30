@@ -145,3 +145,8 @@ from django.contrib.messages import constants as message_constants  # noqa: E402
 MESSAGE_TAGS = {
     message_constants.ERROR: "danger",
 }
+ALLOWED_HOSTS = [
+    "factory-qc-system.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
