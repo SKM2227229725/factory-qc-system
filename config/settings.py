@@ -16,15 +16,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security
 # ---------------------------------------------------------------------------
 SECRET_KEY = config("SECRET_KEY")
-
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = config(
-    "ALLOWED_HOSTS",
-    default="127.0.0.1,localhost",
-    cast=Csv()
-)
-
+ALLOWED_HOSTS = [
+    "factory-qc-system.onrender.com",
+    "localhost",
+    "127.0.0.1",
+]
 # ---------------------------------------------------------------------------
 # Applications
 # ---------------------------------------------------------------------------
@@ -150,8 +148,3 @@ from django.contrib.messages import constants as message_constants  # noqa: E402
 MESSAGE_TAGS = {
     message_constants.ERROR: "danger",
 }
-ALLOWED_HOSTS = [
-    "factory-qc-system.onrender.com",
-    "localhost",
-    "127.0.0.1",
-]
